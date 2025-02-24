@@ -25,7 +25,7 @@ const ChatContent = ({
       />
     </div>
 
-    <div className="px-4 max-w-3xl w-full mx-auto">
+    <div className="relative px-4 max-w-3xl w-full mx-auto">
       <ErrorDisplay error={error} onDismiss={onDismissError} />
     </div>
 

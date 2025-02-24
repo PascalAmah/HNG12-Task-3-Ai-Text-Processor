@@ -7,7 +7,7 @@ const apiService = {
     try {
       this.detector = await this.initializeDetector();
       this.translator = await this.initializeTranslator(sourceLang, targetLang);
-      // this.summarizer = await this.initializeSummarizer();
+      this.summarizer = await this.initializeSummarizer();
     } catch (error) {
       console.error("Service initialization failed:", error);
       throw error;
