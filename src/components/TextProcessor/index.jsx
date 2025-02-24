@@ -19,7 +19,7 @@ const TextProcessor = () => {
     setMessages,
     createNewChat,
     deleteChat,
-    setSelectedChatId,
+    onSelectChat,
   } = useChats();
 
   useEffect(() => {
@@ -193,10 +193,7 @@ const TextProcessor = () => {
         onNewChat={createNewChat}
         chats={chats}
         selectedChatId={selectedChatId}
-        onSelectChat={(chat) => {
-          setSelectedChatId(chat.id);
-          setMessages(chat.messages);
-        }}
+        onSelectChat={onSelectChat}
         onDeleteChat={deleteChat}
       />
 

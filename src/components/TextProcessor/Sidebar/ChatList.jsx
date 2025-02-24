@@ -19,12 +19,13 @@ const ChatList = ({
           key={chat.id}
           className={cn(
             "group flex items-center gap-2 rounded-lg p-2 cursor-pointer hover:bg-gray-100",
-            selectedChatId === chat.id && "bg-gray-100"
+            chat.id.toString() === selectedChatId?.toString() && "bg-gray-100"
           )}
         >
           <button
             className="flex-1 text-left truncate"
             onClick={() => onSelectChat(chat)}
+            data-selected={chat.id.toString() === selectedChatId?.toString()}
           >
             {sidebarOpen ? (
               <>
@@ -44,9 +45,12 @@ const ChatList = ({
               variant="ghost"
               size="icon"
               onClick={() => onDeleteChat(chat.id)}
-              className="opacity-0 group-hover:opacity-100 h-8 w-8"
+              className={cn(
+                "md:opacity-0 md:group-hover:opacity-100 h-8 w-8",
+                "hover:bg-red-100 hover:text-red-500"
+              )}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           )}
         </div>

@@ -5,50 +5,97 @@ export const useChats = () => {
   const [chats, setChats] = useState([]);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [initialized, setInitialized] = useState(false);
 
+  // Initialize chats on component mount
   useEffect(() => {
-    try {
-      const savedChats = localStorage.getItem("chats");
-      if (savedChats) {
-        const parsedChats = JSON.parse(savedChats);
-        setChats(parsedChats);
-        if (parsedChats.length > 0) {
-          setSelectedChatId(parsedChats[0].id);
-          setMessages(parsedChats[0].messages);
+    if (!initialized) {
+      try {
+        const savedChats = localStorage.getItem("chats");
+        const lastSelectedChatId = localStorage.getItem("selectedChatId");
+
+        if (savedChats) {
+          const parsedChats = JSON.parse(savedChats);
+          if (parsedChats.length > 0) {
+            setChats(parsedChats);
+
+            if (
+              lastSelectedChatId &&
+              parsedChats.some(
+                (chat) => chat.id.toString() === lastSelectedChatId.toString()
+              )
+            ) {
+              setSelectedChatId(lastSelectedChatId);
+              const selectedChat = parsedChats.find(
+                (chat) => chat.id.toString() === lastSelectedChatId.toString()
+              );
+              setMessages(selectedChat.messages || []);
+            } else {
+              setSelectedChatId(parsedChats[0].id);
+              setMessages(parsedChats[0].messages || []);
+            }
+          } else {
+            const newChat = createNewChatInternal();
+            setChats([newChat]);
+            setSelectedChatId(newChat.id);
+            setMessages([]);
+          }
+        } else {
+          const newChat = createNewChatInternal();
+          setChats([newChat]);
+          setSelectedChatId(newChat.id);
+          setMessages([]);
         }
+        setInitialized(true);
+      } catch (err) {
+        console.error("Error loading chats:", err);
+        const newChat = createNewChatInternal();
+        setChats([newChat]);
+        setSelectedChatId(newChat.id);
+        setMessages([]);
+        setInitialized(true);
       }
-    } catch (err) {
-      console.error("Error loading chats:", err);
-      throw new Error("Failed to load saved chats");
     }
   }, []);
 
   useEffect(() => {
-    try {
-      if (selectedChatId) {
-        const updatedChats = chats.map((chat) =>
-          chat.id === selectedChatId ? { ...chat, messages } : chat
-        );
-        localStorage.setItem("chats", JSON.stringify(updatedChats));
-        setChats(updatedChats);
-      }
-    } catch (err) {
-      console.error("Error saving chats:", err);
-      throw new Error("Failed to save chat");
+    if (initialized && chats.length > 0) {
+      localStorage.setItem("chats", JSON.stringify(chats));
     }
-  }, [messages, selectedChatId]);
+  }, [chats, initialized]);
+
+  useEffect(() => {
+    if (initialized && chats.length === 0) {
+      localStorage.removeItem("selectedChatId");
+      localStorage.removeItem("chats");
+    }
+  }, [chats, initialized]);
+
+  useEffect(() => {
+    if (initialized && selectedChatId && messages) {
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id.toString() === selectedChatId.toString()
+            ? { ...chat, messages }
+            : chat
+        )
+      );
+    }
+  }, [messages, selectedChatId, initialized]);
+
+  const createNewChatInternal = () => ({
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    messages: [],
+  });
 
   const createNewChat = () => {
     try {
-      const newChat = {
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        messages: [],
-      };
-
+      const newChat = createNewChatInternal();
       setChats((prev) => [newChat, ...prev]);
       setSelectedChatId(newChat.id);
       setMessages([]);
+      localStorage.setItem("selectedChatId", newChat.id.toString());
       return newChat;
     } catch (err) {
       console.error("Error creating new chat:", err);
@@ -56,17 +103,27 @@ export const useChats = () => {
     }
   };
 
+  const onSelectChat = (chat) => {
+    setSelectedChatId(chat.id);
+    setMessages(chat.messages || []);
+    localStorage.setItem("selectedChatId", chat.id.toString());
+  };
+
   const deleteChat = (chatId) => {
     try {
-      setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+      const updatedChats = chats.filter((chat) => chat.id !== chatId);
+      setChats(updatedChats);
+
       if (selectedChatId === chatId) {
-        const remainingChats = chats.filter((chat) => chat.id !== chatId);
-        if (remainingChats.length > 0) {
-          setSelectedChatId(remainingChats[0].id);
-          setMessages(remainingChats[0].messages);
+        if (updatedChats.length > 0) {
+          const newSelectedId = updatedChats[0].id;
+          setSelectedChatId(newSelectedId);
+          setMessages(updatedChats[0].messages || []);
+          localStorage.setItem("selectedChatId", newSelectedId.toString());
         } else {
           setSelectedChatId(null);
           setMessages([]);
+          localStorage.removeItem("selectedChatId");
         }
       }
     } catch (err) {
@@ -80,9 +137,10 @@ export const useChats = () => {
     selectedChatId,
     messages,
     setMessages,
+    setSelectedChatId,
+    onSelectChat,
     createNewChat,
     deleteChat,
-    setSelectedChatId,
   };
 };
 

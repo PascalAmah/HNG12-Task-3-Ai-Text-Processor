@@ -1,14 +1,9 @@
 /* eslint-disable react/prop-types */
-import { MessageSquare, PanelLeftClose, PanelLeft } from "lucide-react";
+import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const SidebarHeader = ({ sidebarOpen, onToggleSidebar }) => (
-  <div className="p-4 border-b flex items-center justify-between">
-    <div className={cn("flex items-center gap-2", !sidebarOpen && "hidden")}>
-      <MessageSquare className="h-6 w-6" />
-      <span className="font-semibold">AI Text Processor</span>
-    </div>
+  <div className="p-4 border-b flex items-center justify-start">
     <Button
       variant="ghost"
       size="icon"
