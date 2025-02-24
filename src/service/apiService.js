@@ -7,7 +7,7 @@ const apiService = {
     try {
       this.detector = await this.initializeDetector();
       this.translator = await this.initializeTranslator(sourceLang, targetLang);
-      // this.summarizer = await this.initializeSummarizer();
+      this.summarizer = await this.initializeSummarizer();
     } catch (error) {
       console.error("Service initialization failed:", error);
       throw error;
@@ -140,49 +140,49 @@ const apiService = {
     }
   },
 
-  // async initializeSummarizer() {
-  //   try {
-  //     const available = (await self.ai.summarizer.capabilities()).available;
-  //     if (available === "no") {
-  //       console.error("Summarizer API is not available.");
-  //       return null;
-  //     }
+  async initializeSummarizer() {
+     try {
+       const available = (await self.ai.summarizer.capabilities()).available;
+       if (available === "no") {
+         console.error("Summarizer API is not available.");
+         return null;
+      }
 
-  //     const options = {
-  //       sharedContext: "Scientific or technical content",
-  //       type: "key-points",
-  //       format: "markdown",
-  //       length: "medium",
-  //     };
+       const options = {
+         sharedContext: "Scientific or technical content",
+         type: "key-points",
+         format: "markdown",
+         length: "medium",
+       };
 
-  //     let summarizer = await self.ai.summarizer.create(options);
-  //     if (available !== "readily") {
-  //       summarizer.addEventListener("downloadprogress", (e) =>
-  //         console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`)
-  //       );
-  //       await summarizer.ready;
-  //     }
-  //     return summarizer;
-  //   } catch (error) {
-  //     console.error("Error initializing summarizer:", error);
-  //     return null;
-  //   }
-  // },
+       let summarizer = await self.ai.summarizer.create(options);
+       if (available !== "readily") {
+         summarizer.addEventListener("downloadprogress", (e) =>
+           console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`)
+         );
+         await summarizer.ready;
+       }
+       return summarizer;
+     } catch (error) {
+       console.error("Error initializing summarizer:", error);
+       return null;
+     }
+   },
 
-  // async summarizeText(text) {
-  //   if (!this.summarizer) {
-  //     console.error("Summarizer is not initialized.");
-  //     return "";
-  //   }
-  //   try {
-  //     return await this.summarizer.summarize(text, {
-  //       context: "For a tech-savvy audience.",
-  //     });
-  //   } catch (error) {
-  //     console.error("Summarization error:", error);
-  //     return "";
-  //   }
-  // },
+   async summarizeText(text) {
+     if (!this.summarizer) {
+       console.error("Summarizer is not initialized.");
+       return "";
+     }
+     try {
+       return await this.summarizer.summarize(text, {
+         context: "For a tech-savvy audience.",
+       });
+     } catch (error) {
+       console.error("Summarization error:", error);
+       return "";
+     }
+   },
 };
 
 export default apiService;
